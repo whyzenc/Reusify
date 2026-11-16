@@ -1,11 +1,27 @@
+
 <div align="center">
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img
+    width="100%"
+    alt="Rusify - Student Preloved Marketplace"
+    src="./assets/rusify-banner.png"
+  />
 
-  <h1>Built with AI Studio</h2>
+  <h1>Rusify - Student Preloved Marketplace</h1>
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+  <p>
+    <b>Buy • Sell • Reuse</b>
+  </p>
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+  <p>
+    Marketplace preloved barang mahasiswa yang praktis,
+    aman, dan hemat.
+  </p>
+
+  <p>
+    ♻️ Less Waste, More Value!
+  </p>
 
 </div>
+
+---
