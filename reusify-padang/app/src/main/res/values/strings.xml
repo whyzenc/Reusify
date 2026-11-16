@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Reusify Padang</string>
+    <string name="tagline_campus">Marketplace Barang Bekas Mahasiswa Padang</string>
+    <string name="sign_in_google">Masuk dengan Google</string>
+    <string name="search_hint">Cari buku, kipas, kalkulator, helm...</string>
+    <string name="sell_item_fab">Jual Barang</string>
+    <string name="error_generic">Terjadi kesalahan. Silakan coba lagi.</string>
+</resources>

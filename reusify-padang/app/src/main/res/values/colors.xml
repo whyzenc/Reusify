@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="crimson_primary">#FFC81E2B</color>
+    <color name="crimson_dark">#FF991520</color>
+    <color name="orange_accent">#FFF97316</color>
+    <color name="orange_deep">#FFEA580C</color>
+    <color name="ivory_surface">#FFFCFAF9</color>
+    <color name="black">#FF1E1414</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

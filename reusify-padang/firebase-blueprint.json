@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "Campus": {
+      "title": "Campus",
+      "description": "Registered university or campus in Padang managed by admin.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "description": "Short campus code (e.g. UNP, PNP, UNAND, UBH)" },
+        "name": { "type": "string", "description": "Full campus name" },
+        "city": { "type": "string", "description": "City name (Padang)" },
+        "meetupSpot": { "type": "string", "description": "Recommended safe COD meetup spot" },
+        "active": { "type": "boolean", "description": "Whether campus is active in marketplace filters" },
+        "createdBy": { "type": "string", "description": "UID of admin who created the campus" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())" }
+      },
+      "required": ["code", "name", "city", "meetupSpot", "active", "createdBy", "createdAt", "updatedAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student user profile acting as buyer, seller, and optional admin/premium.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "Student display name" },
+        "email": { "type": "string", "description": "User email (PII)" },
+        "campusCode": { "type": "string", "description": "Campus code (e.g. UNP)" },
+        "campusName": { "type": "string", "description": "Full campus name" },
+        "faculty": { "type": "string", "description": "Student faculty or major" },
+        "whatsapp": { "type": "string", "description": "WhatsApp contact number (PII)" },
+        "isPremium": { "type": "boolean", "description": "Premium status managed by admin" },
+        "isVerifiedStudent": { "type": "boolean", "description": "Verified student account flag" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": ["userId", "displayName", "email", "campusCode", "campusName", "isPremium", "isVerifiedStudent", "createdAt", "updatedAt"]
+    },
+    "MarketItem": {
+      "title": "MarketItem",
+      "description": "Secondhand item listed by a student seller.",
+      "type": "object",
+      "properties": {
+        "sellerId": { "type": "string", "description": "Seller Firebase Auth UID" },
+        "sellerName": { "type": "string", "description": "Seller public name" },
+        "sellerCampusCode": { "type": "string", "description": "Seller campus code" },
+        "sellerPremium": { "type": "boolean", "description": "Whether seller has premium badge" },
+        "title": { "type": "string", "description": "Item title" },
+        "category": { "type": "string", "description": "Item category" },
+        "campusCode": { "type": "string", "description": "Campus location code" },
+        "campusName": { "type": "string", "description": "Campus location name" },
+        "price": { "type": "integer", "description": "Price in IDR" },
+        "description": { "type": "string", "description": "Condition and COD details" },
+        "imageUrl": { "type": "string", "description": "Photo URL or compressed base64 data URI" },
+        "status": { "type": "string", "enum": ["available", "sold", "archived"], "description": "Listing status" },
+        "buyerId": { "type": "string", "description": "Buyer UID once purchased" },
+        "isFeatured": { "type": "boolean", "description": "Premium highlighted listing flag" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": ["sellerId", "sellerName", "sellerCampusCode", "sellerPremium", "title", "category", "campusCode", "campusName", "price", "description", "imageUrl", "status", "isFeatured", "createdAt", "updatedAt"]
+    },
+    "MarketTransaction": {
+      "title": "MarketTransaction",
+      "description": "Purchase/sale record visible in buyer and seller transaction histories.",
+      "type": "object",
+      "properties": {
+        "transactionCode": { "type": "string", "description": "Unique human-readable transaction code" },
+        "itemId": { "type": "string", "description": "Purchased item ID" },
+        "itemTitle": { "type": "string", "description": "Purchased item title" },
+        "itemImageUrl": { "type": "string", "description": "Purchased item image URL" },
+        "campusCode": { "type": "string", "description": "Campus code" },
+        "amount": { "type": "integer", "description": "Total amount in IDR" },
+        "paymentMethod": { "type": "string", "enum": ["QR_CODE", "COD"], "description": "Payment method" },
+        "qrPayload": { "type": "string", "description": "QR Code payment/receipt payload" },
+        "status": { "type": "string", "enum": ["pending_payment", "paid", "completed", "cancelled"], "description": "Transaction lifecycle status" },
+        "buyerId": { "type": "string", "description": "Buyer UID" },
+        "buyerName": { "type": "string", "description": "Buyer display name" },
+        "buyerCampusCode": { "type": "string", "description": "Buyer campus code" },
+        "sellerId": { "type": "string", "description": "Seller UID" },
+        "sellerName": { "type": "string", "description": "Seller display name" },
+        "meetupNote": { "type": "string", "description": "Optional meetup or payment note" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": ["transactionCode", "itemId", "itemTitle", "itemImageUrl", "campusCode", "amount", "paymentMethod", "qrPayload", "status", "buyerId", "buyerName", "buyerCampusCode", "sellerId", "sellerName", "createdAt", "updatedAt"]
+    },
+    "PremiumRequest": {
+      "title": "PremiumRequest",
+      "description": "Student request for Reusify Premium membership reviewed by admin.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Applicant UID" },
+        "userName": { "type": "string", "description": "Applicant display name" },
+        "userEmail": { "type": "string", "description": "Applicant email" },
+        "campusCode": { "type": "string", "description": "Applicant campus code" },
+        "planName": { "type": "string", "description": "Selected premium plan" },
+        "paymentCode": { "type": "string", "description": "QRIS payment reference code" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "description": "Approval status" },
+        "reviewedBy": { "type": "string", "description": "Admin UID who reviewed the request" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": ["userId", "userName", "userEmail", "campusCode", "planName", "paymentCode", "status", "createdAt", "updatedAt"]
+    },
+    "ItemInquiry": {
+      "title": "ItemInquiry",
+      "description": "Buyer-seller chat message regarding a marketplace item.",
+      "type": "object",
+      "properties": {
+        "itemId": { "type": "string", "description": "Target item ID" },
+        "itemTitle": { "type": "string", "description": "Target item title" },
+        "buyerId": { "type": "string", "description": "Buyer UID" },
+        "buyerName": { "type": "string", "description": "Buyer display name" },
+        "sellerId": { "type": "string", "description": "Seller UID" },
+        "senderId": { "type": "string", "description": "Sender UID" },
+        "message": { "type": "string", "description": "Chat message content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp" }
+      },
+      "required": ["itemId", "itemTitle", "buyerId", "buyerName", "sellerId", "senderId", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/campuses/{campusId}": {
+      "schema": { "$ref": "#/entities/Campus" },
+      "description": "Padang campuses list (UNP, PNP, UNAND, UBH, plus admin-added campuses)"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private student user profiles isolated per owner and admin"
+    },
+    "/items/{itemId}": {
+      "schema": { "$ref": "#/entities/MarketItem" },
+      "description": "Secondhand marketplace items listed by students"
+    },
+    "/transactions/{txId}": {
+      "schema": { "$ref": "#/entities/MarketTransaction" },
+      "description": "Order and QR/COD payment history for buyers and sellers"
+    },
+    "/premium_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/PremiumRequest" },
+      "description": "Premium account upgrade requests managed by admin"
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/ItemInquiry" },
+      "description": "In-app chat inquiries between buyers and sellers"
+    }
+  }
+}

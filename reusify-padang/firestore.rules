@@ -1,0 +1,341 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        ('email_verified' in request.auth.token &&
+         request.auth.token.email_verified == true &&
+         'email' in request.auth.token &&
+         request.auth.token.email == 'whenyzenica@gmail.com')
+      );
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    function isValidCampus(data) {
+      return data.code is string && data.code.size() >= 2 && data.code.size() <= 15 &&
+             data.name is string && data.name.size() >= 3 && data.name.size() <= 100 &&
+             data.city is string && data.city.size() >= 2 && data.city.size() <= 50 &&
+             data.meetupSpot is string && data.meetupSpot.size() <= 120 &&
+             data.active is bool &&
+             data.createdBy is string && data.createdBy.size() >= 1 && data.createdBy.size() <= 128 &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+             data.email is string && data.email.size() <= 120 &&
+             data.campusCode is string && data.campusCode.size() >= 2 && data.campusCode.size() <= 15 &&
+             data.campusName is string && data.campusName.size() >= 2 && data.campusName.size() <= 100 &&
+             (!('faculty' in data) || (data.faculty is string && data.faculty.size() <= 80)) &&
+             (!('whatsapp' in data) || (data.whatsapp is string && data.whatsapp.size() <= 25)) &&
+             data.isPremium is bool &&
+             data.isVerifiedStudent is bool &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidItem(data) {
+      return data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128 &&
+             data.sellerName is string && data.sellerName.size() >= 1 && data.sellerName.size() <= 80 &&
+             data.sellerCampusCode is string && data.sellerCampusCode.size() >= 2 && data.sellerCampusCode.size() <= 15 &&
+             data.sellerPremium is bool &&
+             data.title is string && data.title.size() >= 3 && data.title.size() <= 120 &&
+             data.category is string && data.category.size() >= 2 && data.category.size() <= 40 &&
+             data.campusCode is string && data.campusCode.size() >= 2 && data.campusCode.size() <= 15 &&
+             data.campusName is string && data.campusName.size() >= 2 && data.campusName.size() <= 100 &&
+             data.price is int && data.price > 0 && data.price <= 100000000 &&
+             data.description is string && data.description.size() >= 5 && data.description.size() <= 1000 &&
+             data.imageUrl is string && data.imageUrl.size() <= 150000 &&
+             data.status in ['available', 'sold', 'archived'] &&
+             (!('buyerId' in data) || (data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128)) &&
+             data.isFeatured is bool &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidTransaction(data) {
+      return data.transactionCode is string && data.transactionCode.size() >= 4 && data.transactionCode.size() <= 40 &&
+             data.itemId is string && data.itemId.size() >= 1 && data.itemId.size() <= 128 &&
+             data.itemTitle is string && data.itemTitle.size() >= 1 && data.itemTitle.size() <= 120 &&
+             data.itemImageUrl is string && data.itemImageUrl.size() <= 150000 &&
+             data.campusCode is string && data.campusCode.size() >= 2 && data.campusCode.size() <= 15 &&
+             data.amount is int && data.amount > 0 && data.amount <= 100000000 &&
+             data.paymentMethod in ['QR_CODE', 'COD'] &&
+             data.qrPayload is string && data.qrPayload.size() <= 500 &&
+             data.status in ['pending_payment', 'paid', 'completed', 'cancelled'] &&
+             data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128 &&
+             data.buyerName is string && data.buyerName.size() >= 1 && data.buyerName.size() <= 80 &&
+             data.buyerCampusCode is string && data.buyerCampusCode.size() >= 2 && data.buyerCampusCode.size() <= 15 &&
+             data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128 &&
+             data.sellerName is string && data.sellerName.size() >= 1 && data.sellerName.size() <= 80 &&
+             (!('meetupNote' in data) || (data.meetupNote is string && data.meetupNote.size() <= 300)) &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidPremiumRequest(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.userName is string && data.userName.size() >= 1 && data.userName.size() <= 80 &&
+             data.userEmail is string && data.userEmail.size() <= 120 &&
+             data.campusCode is string && data.campusCode.size() >= 2 && data.campusCode.size() <= 15 &&
+             data.planName is string && data.planName.size() >= 2 && data.planName.size() <= 60 &&
+             data.paymentCode is string && data.paymentCode.size() >= 4 && data.paymentCode.size() <= 60 &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             (!('reviewedBy' in data) || (data.reviewedBy is string && data.reviewedBy.size() <= 128)) &&
+             isValidTimestamp(data.createdAt) &&
+             isValidTimestamp(data.updatedAt);
+    }
+
+    function isValidInquiry(data) {
+      return data.itemId is string && data.itemId.size() >= 1 && data.itemId.size() <= 128 &&
+             data.itemTitle is string && data.itemTitle.size() >= 1 && data.itemTitle.size() <= 120 &&
+             data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128 &&
+             data.buyerName is string && data.buyerName.size() >= 1 && data.buyerName.size() <= 80 &&
+             data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128 &&
+             data.senderId is string && data.senderId.size() >= 1 && data.senderId.size() <= 128 &&
+             data.message is string && data.message.size() >= 1 && data.message.size() <= 500 &&
+             isValidTimestamp(data.createdAt);
+    }
+
+    // Admins collection (only admins can manage)
+    match /admins/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isAdmin());
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Campuses collection (active campuses readable by signed-in students; managed by admin)
+    match /campuses/{campusId} {
+      allow get: if isSignedIn() && isValidId(campusId) && (existing().active == true || isAdmin());
+      allow list: if isSignedIn() && (existing().active == true || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(campusId) &&
+                       isAdmin() &&
+                       incoming().createdBy == request.auth.uid &&
+                       incoming().keys().hasAll(['code', 'name', 'city', 'meetupSpot', 'active', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['code', 'name', 'city', 'meetupSpot', 'active', 'createdBy', 'createdAt', 'updatedAt']) &&
+                       isValidCampus(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(campusId) &&
+                       isAdmin() &&
+                       isValidCampus(incoming()) &&
+                       incoming().createdBy == existing().createdBy &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['code', 'name', 'city', 'meetupSpot', 'active', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(campusId) && isAdmin();
+    }
+
+    // Users collection (strict PII isolation: owner or admin only)
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       (incoming().isPremium == false || isAdmin()) &&
+                       incoming().keys().hasAll(['userId', 'displayName', 'email', 'campusCode', 'campusName', 'isPremium', 'isVerifiedStudent', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'displayName', 'email', 'campusCode', 'campusName', 'faculty', 'whatsapp', 'isPremium', 'isVerifiedStudent', 'createdAt', 'updatedAt']) &&
+                       isValidUserProfile(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         isAdmin() ||
+                         (
+                           request.auth.uid == userId &&
+                           incoming().isPremium == existing().isPremium &&
+                           incoming().isVerifiedStudent == existing().isVerifiedStudent &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'campusCode', 'campusName', 'faculty', 'whatsapp', 'updatedAt'])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(userId) && isAdmin();
+    }
+
+    // Marketplace items collection
+    match /items/{itemId} {
+      allow get: if isSignedIn() && isValidId(itemId) && (
+        existing().status == 'available' ||
+        existing().sellerId == request.auth.uid ||
+        existing().buyerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        existing().status == 'available' ||
+        existing().sellerId == request.auth.uid ||
+        existing().buyerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+                       isValidId(itemId) &&
+                       incoming().sellerId == request.auth.uid &&
+                       incoming().status == 'available' &&
+                       !('buyerId' in incoming()) &&
+                       incoming().keys().hasAll(['sellerId', 'sellerName', 'sellerCampusCode', 'sellerPremium', 'title', 'category', 'campusCode', 'campusName', 'price', 'description', 'imageUrl', 'status', 'isFeatured', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['sellerId', 'sellerName', 'sellerCampusCode', 'sellerPremium', 'title', 'category', 'campusCode', 'campusName', 'price', 'description', 'imageUrl', 'status', 'isFeatured', 'createdAt', 'updatedAt']) &&
+                       isValidItem(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(itemId) &&
+                       isValidItem(incoming()) &&
+                       incoming().sellerId == existing().sellerId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         isAdmin() ||
+                         (
+                           existing().status != 'sold' &&
+                           request.auth.uid == existing().sellerId &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'campusCode', 'campusName', 'price', 'description', 'imageUrl', 'status', 'isFeatured', 'updatedAt'])
+                         ) ||
+                         (
+                           existing().status == 'available' &&
+                           request.auth.uid != existing().sellerId &&
+                           incoming().status == 'sold' &&
+                           incoming().buyerId == request.auth.uid &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'buyerId', 'updatedAt'])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(itemId) && (existing().sellerId == request.auth.uid || isAdmin());
+    }
+
+    // Transactions history (for both buyers and sellers)
+    match /transactions/{txId} {
+      allow get: if isSignedIn() && isValidId(txId) && (
+        existing().buyerId == request.auth.uid ||
+        existing().sellerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        existing().buyerId == request.auth.uid ||
+        existing().sellerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+                       isValidId(txId) &&
+                       incoming().buyerId == request.auth.uid &&
+                       incoming().buyerId != incoming().sellerId &&
+                       (incoming().status == 'pending_payment' || incoming().status == 'paid') &&
+                       incoming().keys().hasAll(['transactionCode', 'itemId', 'itemTitle', 'itemImageUrl', 'campusCode', 'amount', 'paymentMethod', 'qrPayload', 'status', 'buyerId', 'buyerName', 'buyerCampusCode', 'sellerId', 'sellerName', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['transactionCode', 'itemId', 'itemTitle', 'itemImageUrl', 'campusCode', 'amount', 'paymentMethod', 'qrPayload', 'status', 'buyerId', 'buyerName', 'buyerCampusCode', 'sellerId', 'sellerName', 'meetupNote', 'createdAt', 'updatedAt']) &&
+                       isValidTransaction(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(txId) &&
+                       isValidTransaction(incoming()) &&
+                       incoming().buyerId == existing().buyerId &&
+                       incoming().sellerId == existing().sellerId &&
+                       incoming().itemId == existing().itemId &&
+                       incoming().amount == existing().amount &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         isAdmin() ||
+                         (
+                           existing().status != 'completed' &&
+                           existing().status != 'cancelled' &&
+                           (
+                             (
+                               request.auth.uid == existing().buyerId &&
+                               incoming().status in ['paid', 'completed', 'cancelled'] &&
+                               incoming().diff(existing()).affectedKeys().hasOnly(['status', 'meetupNote', 'updatedAt'])
+                             ) ||
+                             (
+                               request.auth.uid == existing().sellerId &&
+                               incoming().status in ['completed', 'cancelled'] &&
+                               incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+                             )
+                           )
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(txId) && isAdmin();
+    }
+
+    // Premium membership upgrade requests (managed by Admin)
+    match /premium_requests/{requestId} {
+      allow get: if isSignedIn() && isValidId(requestId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+
+      allow create: if isSignedIn() &&
+                       isValidId(requestId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().status == 'pending' &&
+                       !('reviewedBy' in incoming()) &&
+                       incoming().keys().hasAll(['userId', 'userName', 'userEmail', 'campusCode', 'planName', 'paymentCode', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'userName', 'userEmail', 'campusCode', 'planName', 'paymentCode', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidPremiumRequest(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(requestId) &&
+                       isAdmin() &&
+                       isValidPremiumRequest(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'reviewedBy', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(requestId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    // Inquiries / chat messages between buyer and seller
+    match /inquiries/{inquiryId} {
+      allow get: if isSignedIn() && isValidId(inquiryId) && (
+        existing().buyerId == request.auth.uid ||
+        existing().sellerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        existing().buyerId == request.auth.uid ||
+        existing().sellerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+                       isValidId(inquiryId) &&
+                       incoming().senderId == request.auth.uid &&
+                       (incoming().buyerId == request.auth.uid || incoming().sellerId == request.auth.uid) &&
+                       incoming().keys().hasAll(['itemId', 'itemTitle', 'buyerId', 'buyerName', 'sellerId', 'senderId', 'message', 'createdAt']) &&
+                       incoming().keys().hasOnly(['itemId', 'itemTitle', 'buyerId', 'buyerName', 'sellerId', 'senderId', 'message', 'createdAt']) &&
+                       isValidInquiry(incoming());
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(inquiryId) && isAdmin();
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Reusify Padang",
+  "description": "Aplikasi marketplace jual beli barang bekas antar mahasiswa kampus di Padang (UNP, PNP, UNAND, UBH, dan lainnya) dengan pembayaran QR Code/COD, riwayat transaksi penjual & pembeli, serta manajemen admin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
