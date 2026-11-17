@@ -4,7 +4,7 @@
   <img
     width="100%"
     alt="Rusify - Student Preloved Marketplace"
-    src="./assets/rusify-banner.png"
+    src="./assets/reusify-banner.png"
   />
 
   <h1>Rusify - Student Preloved Marketplace</h1>
